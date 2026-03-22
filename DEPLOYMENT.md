@@ -263,7 +263,7 @@ NEXT_PUBLIC_API_URL=https://your-domain.com/api
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/openclaw-mission-control.git
+git clone https://github.com/Rishabh-Bajpai/openclaw-mission-control-building-example.git
 cd openclaw-mission-control
 
 # Create environment file
@@ -331,7 +331,7 @@ sudo systemctl restart postgresql
 ```bash
 # Clone repository
 cd /opt
-sudo git clone https://github.com/yourusername/openclaw-mission-control.git
+sudo git clone https://github.com/Rishabh-Bajpai/openclaw-mission-control-building-example.git
 sudo chown -R missioncontrol:missioncontrol openclaw-mission-control
 
 # Setup backend

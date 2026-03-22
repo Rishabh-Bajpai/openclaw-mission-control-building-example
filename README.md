@@ -117,7 +117,7 @@ This tutorial teaches you to build:
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/yourusername/openclaw-mission-control-building-example.git
+git clone https://github.com/Rishabh-Bajpai/openclaw-mission-control-building-example.git
 cd openclaw-mission-control-building-example
 ```
 

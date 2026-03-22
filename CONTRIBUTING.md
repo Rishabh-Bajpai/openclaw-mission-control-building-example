@@ -50,11 +50,11 @@ This project adheres to a code of conduct. By participating, you are expected to
 
 ```bash
 # Fork on GitHub first, then clone your fork
-git clone https://github.com/YOUR_USERNAME/openclaw-mission-control.git
-cd openclaw-mission-control
+git clone https://github.com/YOUR_USERNAME/openclaw-mission-control-building-example.git
+cd openclaw-mission-control-building-example
 
 # Add upstream remote
-git remote add upstream https://github.com/original/openclaw-mission-control.git
+git remote add upstream https://github.com/Rishabh-Bajpai/openclaw-mission-control-building-example.git
 ```
 
 ### Backend Setup
