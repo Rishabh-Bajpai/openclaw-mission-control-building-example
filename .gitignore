@@ -1,0 +1,53 @@
+#./backend/agents
+
+# Dependencies
+node_modules/
+package-lock.json
+__pycache__/
+*.pyc
+**/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Environment files (secrets)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+!.env.example
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Cache
+.ruff_cache/
+
+# example files from the official UI implementation
+example_control_ui
+example_control_ui_2
