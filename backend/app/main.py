@@ -107,6 +107,7 @@ from app.api import (
     logs,
     settings as settings_router,
     chat,
+    metrics,
 )
 from app.api.tasks import goals_router, agent_router
 
@@ -177,6 +178,7 @@ app.include_router(meetings.router)
 app.include_router(logs.router)
 app.include_router(settings_router.router)
 app.include_router(chat.router)
+app.include_router(metrics.router)
 
 
 @app.get("/")

@@ -19,6 +19,55 @@ from app.services.workspace_manager import workspace_manager
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
+async def _check_task_dependencies(db: AsyncSession, task: Task) -> tuple[bool, str]:
+    """
+    Check if a task can proceed based on dependencies.
+
+    Returns:
+        tuple: (can_proceed: bool, message: str)
+    """
+    if not task.depends_on:
+        return True, "No dependencies"
+
+    dep_result = await db.execute(select(Task).where(Task.id == task.depends_on))
+    dependency = dep_result.scalar_one_or_none()
+
+    if not dependency:
+        return True, "Dependency not found (may have been deleted)"
+
+    if dependency.status != TaskStatus.DONE:
+        return (
+            False,
+            f"Blocked: Depends on task '{dependency.title}' which is {dependency.status.value}",
+        )
+
+    return True, "Dependencies satisfied"
+
+
+async def _would_create_cycle(db: AsyncSession, task_id: int, depends_on: int) -> bool:
+    """
+    Check if adding a dependency would create a circular dependency.
+    """
+    current = depends_on
+    visited = set()
+
+    while current:
+        if current == task_id:
+            return True
+        if current in visited:
+            break
+
+        visited.add(current)
+
+        result = await db.execute(select(Task.depends_on).where(Task.id == current))
+        current_result = result.scalar_one_or_none()
+        if current_result is None:
+            break
+        current = int(current_result) if current_result else 0
+
+    return False
+
+
 @router.get("/", response_model=List[TaskResponse])
 async def list_tasks(
     status: Optional[str] = None,
@@ -58,12 +107,23 @@ async def create_task(task_data: TaskCreate, db: AsyncSession = Depends(get_db))
         if not agent_result.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Agent not found")
 
+    if task_data.depends_on:
+        dep_result = await db.execute(
+            select(Task).where(Task.id == task_data.depends_on)
+        )
+        dependency = dep_result.scalar_one_or_none()
+        if not dependency:
+            raise HTTPException(status_code=400, detail="Dependency task not found")
+        if task_data.depends_on == task_data.agent_id:
+            raise HTTPException(status_code=400, detail="Task cannot depend on itself")
+
     db_task = Task(
         title=task_data.title,
         description=task_data.description,
         goal_id=task_data.goal_id,
         agent_id=task_data.agent_id,
         priority=task_data.priority,
+        depends_on=task_data.depends_on,
     )
     db.add(db_task)
     await db.commit()
@@ -108,6 +168,26 @@ async def update_task(
     old_status = db_task.status
     old_agent_id = db_task.agent_id
 
+    new_depends_on = task_update.depends_on
+    if new_depends_on is not None:
+        if new_depends_on == task_id:
+            raise HTTPException(status_code=400, detail="Task cannot depend on itself")
+
+        dep_result = await db.execute(select(Task).where(Task.id == new_depends_on))
+        dependency = dep_result.scalar_one_or_none()
+        if not dependency:
+            raise HTTPException(status_code=400, detail="Dependency task not found")
+
+        if await _would_create_cycle(db, task_id, new_depends_on):
+            raise HTTPException(
+                status_code=400, detail="Would create circular dependency"
+            )
+
+    if task_update.status == TaskStatus.IN_PROGRESS and db_task.depends_on:
+        can_start, msg = await _check_task_dependencies(db, db_task)
+        if not can_start:
+            raise HTTPException(status_code=400, detail=msg)
+
     update_data = task_update.model_dump(exclude_unset=True)
     new_agent_id = update_data.get("agent_id")
     agent_just_assigned = new_agent_id is not None and old_agent_id is None
@@ -133,7 +213,6 @@ async def update_task(
         db.add(log)
         await db.commit()
 
-        # Sync TASKS.md for affected agents when status changes
         affected_agents = set()
         if old_agent_id:
             affected_agents.add(old_agent_id)
@@ -143,7 +222,6 @@ async def update_task(
         for agent_id in affected_agents:
             asyncio.create_task(_update_agent_tasks_md(int(agent_id), None))
 
-    # Trigger agent to pick up task if just assigned
     if agent_just_assigned and new_agent_id:
         log = AgentLog(
             agent_id=new_agent_id,

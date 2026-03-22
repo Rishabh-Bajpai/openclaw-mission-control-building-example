@@ -57,6 +57,9 @@ class AgentResponse(BaseModel):
     active_hours_end: str
     can_spawn_subagents: bool
     failure_count: int
+    tasks_completed: int
+    tasks_failed: int
+    total_working_time_minutes: int
     created_at: datetime
     updated_at: datetime
     warnings: Optional[List[str]] = None
@@ -97,6 +100,7 @@ class TaskCreate(BaseModel):
     goal_id: Optional[int] = None
     agent_id: Optional[int] = None
     priority: int = 1
+    depends_on: Optional[int] = None
 
 
 class TaskUpdate(BaseModel):
@@ -106,6 +110,7 @@ class TaskUpdate(BaseModel):
     status: Optional[TaskStatus] = None
     priority: Optional[int] = None
     move_reason: Optional[str] = None
+    depends_on: Optional[int] = None
 
 
 class TaskResponse(BaseModel):
@@ -117,6 +122,8 @@ class TaskResponse(BaseModel):
     status: TaskStatus
     priority: int
     move_reason: Optional[str]
+    depends_on: Optional[int]
+    dependency_title: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     completed_at: Optional[datetime]
@@ -148,14 +155,19 @@ class MessageCreate(BaseModel):
     receiver_id: Optional[int] = None
     content: str
     action_type: Optional[str] = None
+    sender_agent_id: Optional[int] = None
+    recipient_agent_id: Optional[int] = None
 
 
 class MessageResponse(BaseModel):
     id: int
-    sender_id: int
-    receiver_id: Optional[int]
+    agent_id: int
+    sender: str
     content: str
-    action_type: Optional[str]
+    is_from_user: bool
+    sender_agent_id: Optional[int] = None
+    recipient_agent_id: Optional[int] = None
+    message_type: Optional[str] = None
     created_at: datetime
 
     class Config:

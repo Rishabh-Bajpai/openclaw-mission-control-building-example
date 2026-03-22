@@ -32,14 +32,23 @@ def run_agent_heartbeat():
         )
 
         for agent in agents:
-            pending_tasks = (
+            all_backlog_tasks = (
                 db.query(Task)
                 .filter(Task.agent_id == agent.id, Task.status == TaskStatus.BACKLOG)
                 .all()
             )
 
-            if pending_tasks:
-                for task in pending_tasks:
+            assignable_tasks = []
+            for task in all_backlog_tasks:
+                if task.depends_on is None:
+                    assignable_tasks.append(task)
+                else:
+                    dep_task = db.query(Task).filter(Task.id == task.depends_on).first()
+                    if dep_task and dep_task.status == TaskStatus.DONE:
+                        assignable_tasks.append(task)
+
+            if assignable_tasks:
+                for task in assignable_tasks:
                     task.status = TaskStatus.IN_PROGRESS
 
                 db.commit()
@@ -47,13 +56,13 @@ def run_agent_heartbeat():
                 log = AgentLog(
                     agent_id=agent.id,
                     action="HEARTBEAT_AUTO_ASSIGN",
-                    details=f"Auto-assigned {len(pending_tasks)} tasks from heartbeat",
+                    details=f"Auto-assigned {len(assignable_tasks)} tasks from heartbeat",
                 )
                 db.add(log)
                 db.commit()
 
                 logger.info(
-                    f"Auto-assigned {len(pending_tasks)} tasks for agent {agent.name}"
+                    f"Auto-assigned {len(assignable_tasks)} tasks for agent {agent.name}"
                 )
     except Exception as e:
         logger.error(f"Error in agent heartbeat: {e}")
@@ -161,11 +170,21 @@ def check_task_completion():
                     if updated.tzinfo is None:
                         updated = updated.replace(tzinfo=timezone.utc)
                     time_in_progress = datetime.now(timezone.utc) - updated
-                    if time_in_progress > timedelta(
-                        minutes=10
-                    ):  # If >10 minutes in progress
+                    if time_in_progress > timedelta(minutes=10):
                         task.status = TaskStatus.REVIEW
                         db.commit()
+
+                        agent = (
+                            db.query(Agent).filter(Agent.id == task.agent_id).first()
+                        )
+                        if agent:
+                            completion_minutes = int(
+                                time_in_progress.total_seconds() / 60
+                            )
+                            agent.total_working_time_minutes = (
+                                agent.total_working_time_minutes or 0
+                            ) + completion_minutes
+                            db.commit()
 
                         log = AgentLog(
                             agent_id=task.agent_id,

@@ -386,6 +386,15 @@ class Agent(Base):
     If exceeds threshold (e.g., 3), agent status set to OVERHEATED.
     """
 
+    tasks_completed = Column(Integer, default=0)
+    """Total number of tasks completed (moved to DONE)."""
+
+    tasks_failed = Column(Integer, default=0)
+    """Total number of tasks that failed."""
+
+    total_working_time_minutes = Column(Integer, default=0)
+    """Total time spent working on tasks (in minutes)."""
+
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
@@ -411,8 +420,10 @@ class Agent(Base):
     tasks = relationship("Task", back_populates="agent", foreign_keys="Task.agent_id")
     """Tasks assigned to this agent."""
 
-    messages = relationship("Message", back_populates="agent")
-    """Chat messages sent/received by this agent."""
+    messages = relationship(
+        "Message", back_populates="agent", foreign_keys="Message.agent_id"
+    )
+    """Chat messages for this agent."""
 
     logs = relationship("AgentLog", back_populates="agent")
     """Activity logs for this agent."""
@@ -528,6 +539,17 @@ class Task(Base):
 
     completed_at = Column(DateTime, nullable=True)
     """UTC timestamp when task moved to DONE status."""
+
+    depends_on = Column(Integer, ForeignKey("tasks.id"), nullable=True)
+    """
+    ID of task that must be completed before this task can start.
+    
+    When set, this task cannot move from BACKLOG to IN_PROGRESS
+    until the dependency task status is DONE.
+    """
+
+    dependency = relationship("Task", remote_side=[id], foreign_keys=[depends_on])
+    """The task this task depends on."""
 
     agent = relationship("Agent", back_populates="tasks", foreign_keys=[agent_id])
     """Agent assigned to this task."""
@@ -666,8 +688,31 @@ class Message(Base):
     )
     """UTC timestamp when message was sent."""
 
-    agent = relationship("Agent")
+    sender_agent_id = Column(Integer, ForeignKey("agents.id"), nullable=True)
+    """
+    ID of agent sending the message (null for user/system messages).
+    Used for agent-to-agent messaging.
+    """
+
+    recipient_agent_id = Column(Integer, ForeignKey("agents.id"), nullable=True)
+    """
+    ID of agent receiving the message (null for broadcast).
+    Used for agent-to-agent messaging.
+    """
+
+    message_type = Column(String(20), default="direct")
+    """
+    Type of message: direct, broadcast, request, response.
+    """
+
+    agent = relationship("Agent", foreign_keys=[agent_id])
     """Agent in this conversation."""
+
+    sender_agent = relationship("Agent", foreign_keys=[sender_agent_id])
+    """Agent who sent the message."""
+
+    recipient_agent = relationship("Agent", foreign_keys=[recipient_agent_id])
+    """Agent who received the message."""
 
 
 class Meeting(Base):

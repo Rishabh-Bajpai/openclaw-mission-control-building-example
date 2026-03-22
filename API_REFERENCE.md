@@ -1164,4 +1164,4 @@ The API has the following rate limits:
 
 ---
 
-For questions or issues, please check the [Troubleshooting Guide](TROUBLESHOOTING.md) or open an issue on GitHub.
+For questions or issues, please open an issue on GitHub.

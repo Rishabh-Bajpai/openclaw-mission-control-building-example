@@ -60,11 +60,11 @@ To add new workspace files:
 Example - Adding SKILLS.md:
 ```python
 # In create_default_files():
-skills = f"""# SKILLS.md for {agent_name}
+skills = f\'\'\'# SKILLS.md for {agent_name}
 
 ## Core Skills
-- List of skills here
-"""
+  * List of skills here
+\'\'\'
 
 # In read_all():
 skills = self.read_file(agent_name, "SKILLS.md", in_workspace=True)
@@ -107,7 +107,7 @@ class AgentWorkspaceManager:
     def __init__(self, base_dir: Optional[str] = None):
         """
         Initialize workspace manager.
-        
+
         Args:
             base_dir: Root directory for agent workspaces.
                       Defaults to ~/.openclaw/agents
@@ -120,16 +120,16 @@ class AgentWorkspaceManager:
     def _get_agent_dir(self, agent_name: str) -> Path:
         """
         Get the agent's root directory.
-        
+
         Converts agent name to safe directory name (lowercase, underscores).
         This ensures filesystem compatibility across different systems.
-        
+
         Args:
             agent_name: The agent's display name
-            
+
         Returns:
             Path to agent directory
-            
+
         Example:
             >>> manager = AgentWorkspaceManager()
             >>> manager._get_agent_dir("CEO Agent")
@@ -143,13 +143,13 @@ class AgentWorkspaceManager:
     def _get_workspace_dir(self, agent_name: str) -> Path:
         """
         Get the workspace directory where agent files and work live.
-        
+
         The workspace directory is where the agent reads/writes most files.
         OpenClaw uses this as the agent's working directory.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             Path to workspace directory
         """
@@ -158,12 +158,12 @@ class AgentWorkspaceManager:
     def _get_agent_subdir(self, agent_name: str) -> Path:
         """
         Get the agent subdirectory (where models.json lives).
-        
+
         This directory contains OpenClaw-specific configuration files.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             Path to agent subdirectory
         """
@@ -172,12 +172,12 @@ class AgentWorkspaceManager:
     def _get_sessions_dir(self, agent_name: str) -> Path:
         """
         Get the sessions directory.
-        
+
         Stores chat session history and conversation logs.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             Path to sessions directory
         """
@@ -186,10 +186,10 @@ class AgentWorkspaceManager:
     def ensure_directories(self, agent_name: str) -> None:
         """
         Create all necessary directories for an agent.
-        
+
         Called during agent creation to set up the entire workspace structure.
         Uses exist_ok=True to safely handle re-creation.
-        
+
         Args:
             agent_name: The agent's name
         """
@@ -207,15 +207,15 @@ class AgentWorkspaceManager:
     def get_agent_workspace(self, agent_name: str) -> str:
         """
         Get the workspace path for OpenClaw config.
-        
+
         Returns absolute path string for OpenClaw Gateway configuration.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             Absolute path to workspace directory as string
-            
+
         Example:
             >>> manager = AgentWorkspaceManager()
             >>> manager.get_agent_workspace("Developer")
@@ -228,10 +228,10 @@ class AgentWorkspaceManager:
     def get_agent_dir(self, agent_name: str) -> str:
         """
         Get the agent directory path.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             Absolute path to agent directory as string
         """
@@ -242,14 +242,14 @@ class AgentWorkspaceManager:
     ) -> bool:
         """
         Save a file to agent workspace.
-        
+
         Args:
             agent_name: The agent's name
             filename: Name of file to save
             content: File content as string
             in_workspace: If True, save in workspace/ subdirectory.
                         If False, save in agent root directory.
-                        
+
         Returns:
             True if successful, False on error
         """
@@ -269,12 +269,12 @@ class AgentWorkspaceManager:
     ) -> Optional[str]:
         """
         Read a file from agent workspace.
-        
+
         Args:
             agent_name: The agent's name
             filename: Name of file to read
             in_workspace: If True, read from workspace/ subdirectory
-            
+
         Returns:
             File content as string, or None if file doesn't exist
         """
@@ -293,13 +293,13 @@ class AgentWorkspaceManager:
     def save_all(self, agent_name: str, content: FiveFileContent) -> bool:
         """
         Save all agent files to workspace at once.
-        
+
         Convenience method for bulk-saving workspace files.
-        
+
         Args:
             agent_name: The agent's name
             content: FiveFileContent object with all file contents
-            
+
         Returns:
             True if all saves successful
         """
@@ -314,13 +314,13 @@ class AgentWorkspaceManager:
     def read_all(self, agent_name: str) -> Optional[FiveFileContent]:
         """
         Read all agent files from workspace at once.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             FiveFileContent object or None if any core file is missing
-            
+
         Note:
             Returns None if any of the 5 core files are missing.
             This ensures agents always have complete context.
@@ -348,14 +348,14 @@ class AgentWorkspaceManager:
     def update_memory(self, agent_name: str, key: str, value: Any) -> bool:
         """
         Append new content to MEMORY.md.
-        
+
         Used for adding new memories or learnings to agent's long-term memory.
-        
+
         Args:
             agent_name: The agent's name
             key: Section header for the memory
             value: Content to add
-            
+
         Returns:
             True if successful, False if agent files not found
         """
@@ -370,13 +370,13 @@ class AgentWorkspaceManager:
     def add_memory_entry(self, agent_name: str, entry: Dict[str, Any]) -> bool:
         """
         Add a structured entry to MEMORY.md.
-        
+
         Format: "- timestamp: action - details"
-        
+
         Args:
             agent_name: The agent's name
             entry: Dict with timestamp, action, details keys
-            
+
         Returns:
             True if successful
         """
@@ -391,14 +391,14 @@ class AgentWorkspaceManager:
     def update_tasks_md(self, agent_name: str, tasks_content: str) -> bool:
         """
         Update the TASKS.md file with current task board state.
-        
+
         This is called by the scheduler to sync database tasks to markdown.
         The agent reads this file to know what to work on.
-        
+
         Args:
             agent_name: The agent's name
             tasks_content: Markdown content for TASKS.md
-            
+
         Returns:
             True if successful
         """
@@ -409,15 +409,15 @@ class AgentWorkspaceManager:
     ) -> bool:
         """
         Update IDENTITY.md with new name, role, or team.
-        
+
         Called when agent is updated to keep identity file in sync.
-        
+
         Args:
             agent_name: The agent's name (current)
             name: New name
             role: New role
             team: New team name
-            
+
         Returns:
             True if successful
         """
@@ -449,13 +449,13 @@ class AgentWorkspaceManager:
     def delete_agent_files(self, agent_name: str) -> bool:
         """
         Delete all files for an agent.
-        
+
         Called when agent is deleted from Mission Control.
         Removes entire agent directory including all subdirectories.
-        
+
         Args:
             agent_name: The agent's name
-            
+
         Returns:
             True if successful, False on error
         """
@@ -473,7 +473,7 @@ class AgentWorkspaceManager:
     def list_agents(self) -> list[str]:
         """
         List all agents with workspaces.
-        
+
         Returns:
             List of agent directory names
         """
@@ -484,10 +484,10 @@ class AgentWorkspaceManager:
     ) -> FiveFileContent:
         """
         Create default workspace files for a new agent.
-        
+
         Generates all markdown files with default content based on role.
         This is called during agent creation to set up their "brain".
-        
+
         File Contents:
         --------------
         SOUL.md - Core personality traits and values
@@ -496,12 +496,12 @@ class AgentWorkspaceManager:
         MEMORY.md - Long-term memory template
         USER.md - Context about the human operator
         HEARTBEAT.md - Instructions for periodic task checking
-        
+
         Args:
             agent_name: The agent's name
             role: Job title/role
             team: Team name (optional)
-            
+
         Returns:
             FiveFileContent object with all generated content
         """
@@ -649,10 +649,10 @@ If nothing needs attention, reply: HEARTBEAT_OK
 If you took action, briefly summarize what you did.
 """,
         )
-        
+
         # Save all markdown files
         self.save_all(agent_name, default_content)
-        
+
         # Create initial TASKS.md (separate since not in FiveFileContent)
         self.save_file(
             agent_name,
@@ -676,9 +676,9 @@ If you took action, briefly summarize what you did.
     def _create_models_json(self, agent_name: str) -> None:
         """
         Create models.json in the agent subdirectory.
-        
+
         This file is read by OpenClaw for agent configuration.
-        
+
         Args:
             agent_name: The agent's name
         """

@@ -13,6 +13,9 @@ interface Agent {
   active_hours_end: string;
   can_spawn_subagents: boolean;
   failure_count: number;
+  tasks_completed: number;
+  tasks_failed: number;
+  total_working_time_minutes: number;
   created_at: string;
   updated_at: string;
   warnings?: string[] | null;
@@ -53,6 +56,8 @@ interface Task {
   status: 'backlog' | 'in_progress' | 'review' | 'done';
   priority: number;
   move_reason: string | null;
+  depends_on: number | null;
+  dependency_title: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -84,6 +89,28 @@ interface ChatMessage {
   content: string;
   is_from_user: boolean;
   created_at: string;
+}
+
+interface Message {
+  id: number;
+  agent_id: number;
+  sender: string;
+  content: string;
+  is_from_user: boolean;
+  sender_agent_id: number | null;
+  recipient_agent_id: number | null;
+  message_type: string | null;
+  created_at: string;
+}
+
+interface AgentMetrics {
+  agent_id: number;
+  agent_name: string;
+  tasks_completed: number;
+  tasks_in_progress: number;
+  tasks_failed: number;
+  total_working_time_minutes: number;
+  success_rate: number;
 }
 
 interface Meeting {
@@ -202,11 +229,12 @@ export const api = {
       return fetchJSON<Task[]>(`/tasks/${query}`);
     },
     get: (id: number) => fetchJSON<Task>(`/tasks/${id}`),
-    create: (data: { title: string; description?: string; agent_id?: number; priority?: number }) =>
+    create: (data: { title: string; description?: string; agent_id?: number; priority?: number; depends_on?: number }) =>
       fetchJSON<Task>('/tasks/', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: number, data: { status?: string; agent_id?: number; move_reason?: string; title?: string; description?: string }) =>
+    update: (id: number, data: { status?: string; agent_id?: number; move_reason?: string; title?: string; description?: string; depends_on?: number }) =>
       fetchJSON<Task>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' }),
+    unassign: (id: number) => fetchJSON<Task>(`/tasks/${id}/unassign`, { method: 'POST' }),
   },
   goals: {
     list: () => fetchJSON<Goal[]>('/goals/'),
@@ -224,12 +252,20 @@ export const api = {
     clear: (agentId: number) => fetch(`${API_BASE}/chat/${agentId}/messages`, { method: 'DELETE' }),
   },
   messages: {
-    list: (params?: { sender_id?: number; receiver_id?: number; limit?: number }) => {
+    list: (params?: { agent_id?: number; limit?: number }) => {
       const query = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
       return fetchJSON<Message[]>(`/messages/${query}`);
     },
-    send: (data: { sender_id: number; receiver_id?: number; content: string }) =>
-      fetchJSON<Message>('/messages/', { method: 'POST', body: JSON.stringify(data) }),
+    sendAgentMessage: (senderId: number, recipientId: number, content: string, messageType: string = 'direct') =>
+      fetchJSON<Message>(`/messages/agent/${senderId}/to/${recipientId}`, { method: 'POST', body: JSON.stringify({ content, message_type: messageType }) }),
+    getAgentMessages: (agentId: number, includeSent: boolean = true) =>
+      fetchJSON<Message[]>(`/messages/agent/${agentId}?include_sent=${includeSent}`),
+    getConversation: (agent1Id: number, agent2Id: number) =>
+      fetchJSON<Message[]>(`/messages/conversation/${agent1Id}/${agent2Id}`),
+  },
+  metrics: {
+    getAgent: (agentId: number) => fetchJSON<AgentMetrics>(`/metrics/agent/${agentId}`),
+    getLeaderboard: (limit: number = 10) => fetchJSON<AgentMetrics[]>(`/metrics/leaderboard?limit=${limit}`),
   },
   meetings: {
     list: (type?: string) => {
@@ -246,4 +282,4 @@ export const api = {
   },
 };
 
-export type { Agent, AgentHierarchy, Team, Task, Goal, DashboardStats, Message, Meeting, AgentLog };
+export type { Agent, AgentHierarchy, Team, Task, Goal, DashboardStats, Message, ChatMessage, Meeting, AgentLog, AgentMetrics };
