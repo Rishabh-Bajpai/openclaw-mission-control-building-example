@@ -719,16 +719,7 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-## 🎓 Video Tutorial Series
-
-- [Part 1: Architecture Overview](https://youtube.com/...)
-- [Part 2: Creating Your First Agent](https://youtube.com/...)
-- [Part 3: Task Management](https://youtube.com/...)
-- [Part 4: Building Custom Features](https://youtube.com/...)
-- [Part 5: Production Deployment](https://youtube.com/...)
-
----
 
 **Built with ❤️ for the OpenClaw Community**
 
-Questions? Open an issue or join our [Discord](https://discord.gg/...).
+
