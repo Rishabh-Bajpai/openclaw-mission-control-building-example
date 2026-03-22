@@ -8,9 +8,7 @@
 > **A comprehensive tutorial project for building an AI Agent Mission Control Dashboard**
 
 Learn how to build a production-ready dashboard for orchestrating autonomous AI agents with FastAPI, Next.js, and WebSocket real-time communication.
-**Note:** The documentation are **vibe coded** have **not been verified** yet, but they will be verified and improved shortly.
-
-![Mission Control Dashboard](docs/images/dashboard-preview.png)
+> **Note:** Some documentation describes aspirational or planned features that haven't been implemented yet. These are marked where applicable.
 
 ## 📚 Table of Contents
 
@@ -629,19 +627,6 @@ export default function DependenciesPage() {
   return <div>Task Dependencies</div>;
 }
 ```
-
-### Part 5: Production Deployment (20 min)
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide.
-
-Quick checklist:
-- [ ] Use PostgreSQL instead of SQLite
-- [ ] Set up proper secret management
-- [ ] Configure CORS for production domain
-- [ ] Enable HTTPS/WSS
-- [ ] Set up monitoring/logging
-- [ ] Configure rate limiting
-- [ ] Database backups
 
 ---
 

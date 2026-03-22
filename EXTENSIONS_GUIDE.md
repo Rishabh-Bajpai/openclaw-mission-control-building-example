@@ -1,5 +1,7 @@
 # Extension Guide: Building Custom Features
 
+> **Note:** The features described in this guide are **aspirational** - they don't exist in the codebase yet. This is a tutorial showing how to implement them when you're ready.
+
 This guide walks you through implementing 3 popular extensions to OpenClaw Mission Control:
 
 1. **Task Dependencies** - Block tasks until prerequisites complete

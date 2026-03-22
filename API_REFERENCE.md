@@ -449,10 +449,15 @@ Returns tasks grouped by status for agent workspace.
 **Response**:
 ```json
 {
-  "backlog": [],
-  "in_progress": [{ /* task */ }],
-  "review": [],
-  "done": []
+  "agent_id": 1,
+  "tasks": {
+    "BACKLOG": [],
+    "IN_PROGRESS": [],
+    "REVIEW": [],
+    "DONE": []
+  },
+  "total": 0,
+  "markdown": "# Task Board\n\n## BACKLOG\n..."
 }
 ```
 
@@ -464,7 +469,7 @@ GET /agent/tasks/team-tasks/{agent_id}
 
 Returns team tasks grouped by status.
 
-**Response**: Same as my-tasks
+**Response**: Same structure as my-tasks, but includes `team_id`, `team_agent_ids`, and `assigned_to` field on each task.
 
 ---
 

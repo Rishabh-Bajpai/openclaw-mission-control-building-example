@@ -106,9 +106,6 @@ npm run dev
 
 # Run linter
 npm run lint
-
-# Run type checker
-npm run type-check
 ```
 
 ## Coding Standards
